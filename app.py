@@ -179,7 +179,7 @@ def _timestamp():
 
 
 def server_field(link):
-    link = (link or '').strip()
+    link = game.browser_link(link)
     if link.startswith(('https://', 'http://')) and ' ' not in link:
         return '[Join the private server](%s)' % link[:900]
     return link[:1000]
@@ -941,7 +941,7 @@ class App:
         tk.Label(box, text='Private server link', bg=PANEL, fg=TEXT, font=(UIB, 10), anchor='w').pack(fill='x', padx=22, pady=(0, 4))
         self.server = tk.StringVar(value=self.cfg.get('private_server', ''))
         entry(box, self.server, font=('Consolas', 9)).pack(fill='x', padx=22, ipady=6)
-        tk.Label(box, text='Used for auto reconnect and for biome notifications', bg=PANEL, fg=DIM, font=(UI, 8),
+        tk.Label(box, text='Accepts https:// and roblox:// server links', bg=PANEL, fg=DIM, font=(UI, 8),
                  anchor='w').pack(fill='x', padx=18, pady=(4, 8))
         tk.Frame(box, bg=PANEL, height=4).pack()
 
