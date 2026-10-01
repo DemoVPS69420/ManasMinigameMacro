@@ -1884,11 +1884,15 @@ _GAME = tuple(re.compile(r'https?://(?:www\.)?roblox\.com/%s/(\d+)(?:/[^?\s]*)?'
                          r'(\?privateServerLinkCode=([a-zA-Z0-9]+))?' % kind, re.I)
               for kind in ('games', 'game-places'))
 _SHARE = re.compile(r'https?://(?:www\.)?roblox\.com/share\?code=([a-f0-9]{32})&type=Server', re.I)
+_NATIVE_SHARE = re.compile(r'roblox://navigation/share_links\?code=([a-f0-9]{32})&type=Server', re.I)
 
 
 def deeplink(text):
     """The roblox:// link for a game or private server link, or None."""
-    text = text or ''
+    text = (text or '').strip()
+    native = _NATIVE_SHARE.fullmatch(text)
+    if native:
+        return 'roblox://navigation/share_links?code=%s&type=Server' % native.group(1)
     for pattern in _GAME:
         m = pattern.search(text)
         if m:
@@ -1899,6 +1903,15 @@ def deeplink(text):
     if m:
         return 'roblox://navigation/share_links?code=%s&type=Server' % m.group(1)
     return None
+
+
+def browser_link(text):
+    """Convert a native server share link to its browser-friendly Roblox URL."""
+    text = (text or '').strip()
+    native = _NATIVE_SHARE.fullmatch(text)
+    if native:
+        return 'https://www.roblox.com/share?code=%s&type=Server' % native.group(1)
+    return text
 
 
 def _lost_reason(line):
@@ -2207,7 +2220,7 @@ def rejoin(link, say=lambda m: None, stop=lambda: False, log_dir=None, browser=F
         say('the private server link is not a Roblox link')
         return False
     if browser:
-        target = link.strip()
+        target = browser_link(link)
     log_dir = log_dir or LOG_DIR
     if frozen:
         say('Roblox is frozen - closing it')
